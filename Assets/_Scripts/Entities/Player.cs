@@ -6,9 +6,11 @@ namespace Asteroids
   {
 
     [SerializeField]
-    private float _rotationSpeed = 5f;
+    private float _rotationSpeed;
     [SerializeField]
-    private float _thrustSpeed = 5f;
+    private float _thrustSpeed;
+    [SerializeField]
+    private SpriteRenderer[] _flames;
 
     public float RotationSpeed
     {
@@ -18,6 +20,11 @@ namespace Asteroids
     public float ThrustSpeed
     {
       get { return _thrustSpeed; }
+    }
+
+    public SpriteRenderer[] Flames
+    {
+      get { return _flames; }
     }
 
   }

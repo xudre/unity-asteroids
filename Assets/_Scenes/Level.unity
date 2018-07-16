@@ -113,11 +113,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &218042249 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1857035300833894, guid: fb4c1342566defb46be8cb9248566094,
-    type: 2}
-  m_PrefabInternal: {fileID: 1470842310}
 --- !u!1 &368282843
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +174,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1042499799
-  m_SortingLayer: 1
+  m_SortingLayer: -1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 2a78df94cfe2a3247a79650acc0075f6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -187,7 +182,7 @@ SpriteRenderer:
   m_FlipY: 0
   m_DrawMode: 2
   m_Size: {x: 15, y: 15}
-  m_AdaptiveModeThreshold: 0.5
+  m_AdaptiveModeThreshold: 0.137
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
@@ -466,7 +461,8 @@ MonoBehaviour:
   _initialLives: 3
   _playerPrefab: {fileID: 1426273623453434, guid: 154207923d12c5d44ab4bf052c227f9c,
     type: 2}
-  _enemyPrefab: {fileID: 218042249}
+  _enemyPrefab: {fileID: 1857035300833894, guid: fb4c1342566defb46be8cb9248566094,
+    type: 2}
   _asteroidPrefab: {fileID: 1847009396138530, guid: 9d25abe277637bf429e1e4a567c11b4c,
     type: 2}
   _playerRoot: {fileID: 776995810}

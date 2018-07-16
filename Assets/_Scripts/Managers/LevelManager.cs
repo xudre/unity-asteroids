@@ -44,37 +44,45 @@ namespace Asteroids
     private Player _player;
     private Transform[] _bullets;
 
-    private float _inputX;
-    private float _inputY;
+    private float _inputSteer;
+    private float _inputThrust;
     private bool _inputShoot;
     private bool _inputWarp;
 
+    private float _lastThrustTime;
     private float _lastShootTime;
+    private readonly float _thrustDecayTime = .5f;
     private readonly float _shootTimeInterval = .5f;
 
     #region Unity Lifecycle
 
-    void Awake()
+    private void Awake()
     {
       SetupLevel();
       SetupPlayer();
     }
 
-    void Start()
+    private void Start()
     {
       _camera = Camera.main;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-      UpdateInputs();
       UpdatePlayer();
       UpdateAsteroids();
       UpdateEnemies();
     }
 
-    void Update()
+    private void Update()
     {
+      UpdateInputs();
+    }
+
+    private void LateUpdate()
+    {
+      _inputShoot = false;
+      _inputWarp = false;
     }
 
     #endregion
@@ -139,6 +147,8 @@ namespace Asteroids
         playerInstance.transform.parent = _playerRoot;
 
         _player = playerInstance.GetComponent<Player>();
+
+        _player.Life = _initialLives;
       }
 
       _player.transform.position = Vector3.zero;
@@ -146,8 +156,8 @@ namespace Asteroids
 
     private void UpdateInputs()
     {
-      _inputX = InputManager.Instance.Steering;
-      _inputY = InputManager.Instance.Thruster;
+      _inputSteer = InputManager.Instance.Steering;
+      _inputThrust = InputManager.Instance.Thruster;
       _inputShoot = InputManager.Instance.Shoot > 0;
       _inputWarp = InputManager.Instance.Warp > 0;
     }
@@ -157,10 +167,31 @@ namespace Asteroids
       if (_player == null || _player.Dead)
         return;
 
-      _player.transform.Rotate(new Vector3(0, 0, -_inputX * _player.RotationSpeed));
+      _player.transform.Rotate(new Vector3(0, 0, -_inputSteer * _player.RotationSpeed * Time.fixedDeltaTime));
 
-      if (_inputY > 0)
-        _player.Rigidbody.AddForce(_player.transform.up * _inputY * _player.ThrustSpeed);
+      if (_inputThrust > 0)
+      {
+        _player.Rigidbody.AddForce(_player.transform.up * _inputThrust * _player.ThrustSpeed * Time.fixedDeltaTime);
+
+        _lastThrustTime = Time.fixedTime;
+      }
+
+      if (_player.Flames != null)
+      {
+        int flamesCount = _player.Flames.Length;
+        float flameStage = 1 - (Time.fixedTime - _lastThrustTime) / _thrustDecayTime;
+
+        flameStage = flameStage < 0 ? 0 : flameStage > 1 ? 1 : flameStage;
+
+        Color flameColor = new Color(1, 1, 1, flameStage);
+
+        for (int i = 0; i < flamesCount; i++)
+        {
+          SpriteRenderer flame = _player.Flames[i];
+
+          flame.color = flameColor;
+        }
+      }
 
       EdgeWarp(_player);
     }
