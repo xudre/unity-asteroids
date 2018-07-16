@@ -23,9 +23,25 @@ namespace Asteroids
     [SerializeField]
     private GameObject _asteroidPrefab;
 
-    private Destructible[] _enemies;
-    private Destructible[] _asteroids;
-    private Destructible _player;
+    [Space]
+
+    [SerializeField]
+    private Transform _playerRoot;
+    [SerializeField]
+    private Transform _enemiesRoot;
+    [SerializeField]
+    private Transform _asteroidsRoot;
+
+    [Space]
+    
+    [SerializeField]
+    private Vector2Int _edgeWarpOffset = new Vector2Int(10, 10);
+
+    private Camera _camera;
+
+    private Enemy[] _enemies;
+    private Meteor[] _asteroids;
+    private Player _player;
     private Transform[] _bullets;
 
     private float _inputX;
@@ -44,14 +60,21 @@ namespace Asteroids
       SetupPlayer();
     }
 
+    void Start()
+    {
+      _camera = Camera.main;
+    }
+
     void FixedUpdate()
     {
+      UpdateInputs();
       UpdatePlayer();
+      UpdateAsteroids();
+      UpdateEnemies();
     }
 
     void Update()
     {
-      UpdatePlayer();
     }
 
     #endregion
@@ -71,16 +94,40 @@ namespace Asteroids
 
     private void SetupEnemies()
     {
-      _enemies = new Destructible[_maxEnemies];
-      
+      _enemies = new Enemy[_maxEnemies];
 
+      for (int i = 0; i < _maxEnemies; i++)
+      {
+        if (_enemies[i] == null)
+        {
+          GameObject enemyInstance = Instantiate(_enemyPrefab);
+
+          enemyInstance.transform.parent = _enemiesRoot;
+
+          _enemies[i] = enemyInstance.GetComponent<Enemy>();
+        }
+
+        _enemies[i].transform.position = Vector3.zero;
+      }
     }
 
     private void SetupAsteroids()
     {
-      _asteroids = new Destructible[_maxAsteroids];
+      _asteroids = new Meteor[_maxAsteroids];
 
+      for (int i = 0; i < _maxAsteroids; i++)
+      {
+        if (_asteroids[i] == null)
+        {
+          GameObject asteroidInstance = Instantiate(_asteroidPrefab);
 
+          asteroidInstance.transform.parent = _asteroidsRoot;
+
+          _asteroids[i] = asteroidInstance.GetComponent<Meteor>();
+        }
+
+        _asteroids[i].transform.position = Vector3.zero;
+      }
     }
 
     private void SetupPlayer()
@@ -89,20 +136,85 @@ namespace Asteroids
       {
         GameObject playerInstance = Instantiate(_playerPrefab);
 
-        _player = playerInstance.GetComponent<Destructible>();
+        playerInstance.transform.parent = _playerRoot;
+
+        _player = playerInstance.GetComponent<Player>();
       }
 
-      _player.gameObject.transform.position = Vector3.zero;
+      _player.transform.position = Vector3.zero;
     }
 
     private void UpdateInputs()
     {
-      
+      _inputX = InputManager.Instance.Steering;
+      _inputY = InputManager.Instance.Thruster;
+      _inputShoot = InputManager.Instance.Shoot > 0;
+      _inputWarp = InputManager.Instance.Warp > 0;
     }
 
     private void UpdatePlayer()
     {
+      if (_player == null || _player.Dead)
+        return;
 
+      _player.transform.Rotate(new Vector3(0, 0, -_inputX * _player.RotationSpeed));
+
+      if (_inputY > 0)
+        _player.Rigidbody.AddForce(_player.transform.up * _inputY * _player.ThrustSpeed);
+
+      EdgeWarp(_player);
+    }
+
+    private void UpdateAsteroids()
+    {
+      for (int i = 0; i < _maxAsteroids; i++)
+      {
+        Meteor meteor = _asteroids[i];
+
+        if (meteor == null || meteor.Dead)
+          continue;
+
+        EdgeWarp(meteor);
+      }
+    }
+
+    private void UpdateEnemies()
+    {
+      for (int i = 0; i < _maxEnemies; i++)
+      {
+        Enemy enemy = _enemies[i];
+
+        if (enemy == null || enemy.Dead)
+          continue;
+
+        EdgeWarp(enemy);
+      }
+    }
+
+    private void EdgeWarp(Destructible entity)
+    {
+      if (entity == null || entity.Dead)
+        return;
+
+      Vector2Int entitySize = entity.ScreenSize;
+      Vector3 screenPos = _camera.WorldToScreenPoint(entity.transform.position);
+      Vector2 entityPos = screenPos;
+
+      if (screenPos.x < -entitySize.x - _edgeWarpOffset.x)
+        entityPos.x = Screen.width + entitySize.x;
+      else if (screenPos.x > Screen.width + entitySize.x + _edgeWarpOffset.x)
+        entityPos.x = -entitySize.x;
+
+      if (screenPos.y < -entitySize.y - _edgeWarpOffset.y)
+        entityPos.y = Screen.height + entitySize.y;
+      else if (screenPos.y > Screen.height + entitySize.y + _edgeWarpOffset.y)
+        entityPos.y = -entitySize.y;
+
+      Vector3 newPos = _camera.ScreenToWorldPoint(entityPos);
+
+      newPos.z = 0;
+
+      entity.transform.position = newPos;
     }
   }
 }

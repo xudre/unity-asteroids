@@ -17,9 +17,9 @@ namespace Asteroids
     [SerializeField]
     private string _thrusterInput = "Vertical";
     [SerializeField]
-    private string _shootInput = "Attack 1";
+    private string _shootInput = "Fire1";
     [SerializeField]
-    private string _warpInput = "Attack 2";
+    private string _warpInput = "Fire2";
 
     public float Steering
     {
@@ -31,14 +31,14 @@ namespace Asteroids
       get { return Input.GetAxis(_thrusterInput); }
     }
 
-    public bool Shoot
+    public float Shoot
     {
-      get { return Input.GetKeyDown(_shootInput); }
+      get { return Input.GetAxis(_shootInput); }
     }
 
-    public bool Warp
+    public float Warp
     {
-      get { return Input.GetKeyDown(_warpInput); }
+      get { return Input.GetAxis(_warpInput); }
     }
 
     private void Awake()

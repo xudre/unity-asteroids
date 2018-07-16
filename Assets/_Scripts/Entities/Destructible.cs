@@ -11,6 +11,8 @@ namespace Asteroids
     private int _life;
     [SerializeField]
     private int _points;
+    [SerializeField]
+    private Vector2Int _screenSize = new Vector2Int(0, 0);
 
     private PolygonCollider2D _collider2D;
     private Rigidbody2D _rigidbody2D;
@@ -27,9 +29,24 @@ namespace Asteroids
       private set { _points = value; }
     }
 
+    public Vector2Int ScreenSize
+    {
+      get { return _screenSize; }
+    }
+
     public bool Dead
     {
       get { return _life <= 0; }
+    }
+
+    public PolygonCollider2D Collider
+    {
+      get { return _collider2D; }
+    }
+
+    public Rigidbody2D Rigidbody
+    {
+      get { return _rigidbody2D; }
     }
 
     private void Awake()
