@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - PlayerBullet
+  - EnemyBullet
   layers:
   - Default
   - TransparentFX
@@ -41,6 +43,12 @@ TagManager:
   - name: Background
     uniqueID: 1042499799
     locked: 0
+  - name: Artifact
+    uniqueID: 2744019581
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: FX
+    uniqueID: 1841025379
     locked: 0

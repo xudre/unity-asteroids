@@ -4,6 +4,8 @@ namespace Asteroids
 {
   public class LevelManager : MonoBehaviour
   {
+    private const int MAX_ENEMY_BULLETS = 10;
+    private const int MAX_PLAYER_BULLETS = 5;
 
     [SerializeField]
     private int _difficulty = 0;
@@ -13,20 +15,30 @@ namespace Asteroids
     private int _maxAsteroids = 4;
     [SerializeField]
     private int _initialLives = 3;
-
-    [Space]
+    [SerializeField]
+    private float _bulletSpeed = 5;
     
+    [Header("Prefabs")]
+
     [SerializeField]
     private GameObject _playerPrefab;
     [SerializeField]
     private GameObject _enemyPrefab;
     [SerializeField]
     private GameObject _asteroidPrefab;
+    [SerializeField]
+    private GameObject _playerBulletPrefab;
+    [SerializeField]
+    private GameObject _playerBulletHitPrefab;
+    [SerializeField]
+    private GameObject _enemyBulletPrefab;
+    [SerializeField]
+    private GameObject _enemyBulletHitPrefab;
 
     [Space]
 
     [SerializeField]
-    private Transform _playerRoot;
+    private Transform _stageRoot;
     [SerializeField]
     private Transform _enemiesRoot;
     [SerializeField]
@@ -42,7 +54,8 @@ namespace Asteroids
     private Enemy[] _enemies;
     private Meteor[] _asteroids;
     private Player _player;
-    private Transform[] _bullets;
+    private Transform[] _enemyBullets;
+    private Transform[] _playerBullets;
 
     private float _inputSteer;
     private float _inputThrust;
@@ -72,17 +85,12 @@ namespace Asteroids
       UpdatePlayer();
       UpdateAsteroids();
       UpdateEnemies();
+      UpdateBullets();
     }
 
     private void Update()
     {
       UpdateInputs();
-    }
-
-    private void LateUpdate()
-    {
-      _inputShoot = false;
-      _inputWarp = false;
     }
 
     #endregion
@@ -96,6 +104,34 @@ namespace Asteroids
 
     private void SetupLevel()
     {
+      if (_enemyBullets == null)
+      {
+        _enemyBullets = new Transform[MAX_ENEMY_BULLETS];
+
+        for (int i = 0; i < MAX_ENEMY_BULLETS; i++)
+        {
+          GameObject instance = Instantiate(_enemyBulletPrefab, _stageRoot);
+
+          instance.SetActive(false);
+
+          _enemyBullets[i] = instance.transform;
+        }
+      }
+
+      if (_playerBullets == null)
+      {
+        _playerBullets = new Transform[MAX_PLAYER_BULLETS];
+
+        for (int i = 0; i < MAX_PLAYER_BULLETS; i++)
+        {
+          GameObject instance = Instantiate(_playerBulletPrefab, _stageRoot);
+
+          instance.SetActive(false);
+
+          _playerBullets[i] = instance.transform;
+        }
+      }
+
       SetupAsteroids();
       SetupEnemies();
     }
@@ -108,9 +144,7 @@ namespace Asteroids
       {
         if (_enemies[i] == null)
         {
-          GameObject enemyInstance = Instantiate(_enemyPrefab);
-
-          enemyInstance.transform.parent = _enemiesRoot;
+          GameObject enemyInstance = Instantiate(_enemyPrefab, _enemiesRoot);
 
           _enemies[i] = enemyInstance.GetComponent<Enemy>();
         }
@@ -127,9 +161,7 @@ namespace Asteroids
       {
         if (_asteroids[i] == null)
         {
-          GameObject asteroidInstance = Instantiate(_asteroidPrefab);
-
-          asteroidInstance.transform.parent = _asteroidsRoot;
+          GameObject asteroidInstance = Instantiate(_asteroidPrefab, _asteroidsRoot);
 
           _asteroids[i] = asteroidInstance.GetComponent<Meteor>();
         }
@@ -142,9 +174,7 @@ namespace Asteroids
     {
       if (_player == null)
       {
-        GameObject playerInstance = Instantiate(_playerPrefab);
-
-        playerInstance.transform.parent = _playerRoot;
+        GameObject playerInstance = Instantiate(_playerPrefab, _stageRoot);
 
         _player = playerInstance.GetComponent<Player>();
 
@@ -193,6 +223,9 @@ namespace Asteroids
         }
       }
 
+      if (_inputShoot)
+        AddPlayerBullet();
+
       EdgeWarp(_player);
     }
 
@@ -218,8 +251,85 @@ namespace Asteroids
         if (enemy == null || enemy.Dead)
           continue;
 
+        AddEnemyBullet(enemy.transform);
+
         EdgeWarp(enemy);
       }
+    }
+
+    private void UpdateBullets()
+    {
+      for (int i = 0; i < MAX_PLAYER_BULLETS; i++)
+      {
+        Transform bullet = _playerBullets[i];
+
+        if (!bullet.gameObject.activeSelf)
+          continue;
+
+        Vector3 newPos = bullet.position;
+
+        newPos += bullet.up * _bulletSpeed * Time.fixedDeltaTime;
+
+        bullet.position = newPos;
+
+        EdgeDisable(bullet);
+      }
+
+      for (int i = 0; i < MAX_ENEMY_BULLETS; i++)
+      {
+        Transform bullet = _enemyBullets[i];
+
+        if (!bullet.gameObject.activeSelf)
+          continue;
+
+        Vector3 newPos = bullet.position;
+
+        newPos += bullet.up * _bulletSpeed * Time.fixedDeltaTime;
+
+        bullet.position = newPos;
+
+        EdgeDisable(bullet);
+      }
+    }
+
+    private void AddPlayerBullet()
+    {
+      if (_lastShootTime >= Time.fixedTime - _shootTimeInterval)
+        return;
+
+      for (int i = 0; i < MAX_PLAYER_BULLETS; i++)
+      {
+        Transform bullet = _playerBullets[i];
+
+        if (bullet.gameObject.activeSelf)
+          continue;
+
+        bullet.SetPositionAndRotation(_player.transform.position, _player.transform.rotation);
+        bullet.gameObject.SetActive(true);
+
+        _lastShootTime = Time.fixedTime;
+
+        break;
+      }
+    }
+
+    private void AddEnemyBullet(Transform entity)
+    {
+
+    }
+
+    private void EdgeDisable(Transform entity)
+    {
+      if (entity == null || !entity.gameObject.activeSelf)
+        return;
+      
+      Vector3 screenPos = _camera.WorldToScreenPoint(entity.position);
+
+      if (screenPos.x < -_edgeWarpOffset.x ||
+          screenPos.x > Screen.width + _edgeWarpOffset.x ||
+          screenPos.y < -_edgeWarpOffset.y ||
+          screenPos.y > Screen.height + _edgeWarpOffset.y)
+        entity.gameObject.SetActive(false);
     }
 
     private void EdgeWarp(Destructible entity)

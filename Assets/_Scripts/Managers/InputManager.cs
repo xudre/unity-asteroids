@@ -33,12 +33,12 @@ namespace Asteroids
 
     public float Shoot
     {
-      get { return Input.GetAxis(_shootInput); }
+      get { return Input.GetAxisRaw(_shootInput); }
     }
 
     public float Warp
     {
-      get { return Input.GetAxis(_warpInput); }
+      get { return Input.GetAxisRaw(_warpInput); }
     }
 
     private void Awake()
