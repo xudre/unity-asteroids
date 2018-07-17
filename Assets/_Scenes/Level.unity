@@ -174,7 +174,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1042499799
-  m_SortingLayer: -1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 2a78df94cfe2a3247a79650acc0075f6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -316,7 +316,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!114 &1956482131
 MonoBehaviour:
@@ -333,6 +333,7 @@ MonoBehaviour:
   _maxEnemies: 2
   _maxAsteroids: 4
   _initialLives: 3
+  _bulletSpeed: 5
   _playerPrefab: {fileID: 1426273623453434, guid: 154207923d12c5d44ab4bf052c227f9c,
     type: 2}
   _enemyPrefab: {fileID: 1857035300833894, guid: fb4c1342566defb46be8cb9248566094,

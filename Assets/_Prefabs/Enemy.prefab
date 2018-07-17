@@ -116,6 +116,8 @@ MonoBehaviour:
   _life: 1
   _points: 100
   _screenSize: {x: 91, y: 91}
+  _deathPrefab: {fileID: 1229968016416956, guid: 8648855e28e7ce044970b60e803b608d,
+    type: 2}
 --- !u!212 &212929256786332818
 SpriteRenderer:
   m_ObjectHideFlags: 1

@@ -16,9 +16,7 @@ namespace Asteroids
       if (!Dead)
         return;
 
-      GameManager.Instance.Score += Points;
-
-      gameObject.SetActive(false);
+      OnDead();
     }
   }
 }

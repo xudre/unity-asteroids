@@ -4,6 +4,7 @@ namespace Asteroids
 {
   public class Meteor : Destructible
   {
+
     private void OnTriggerEnter2D(Collider2D other)
     {
       if (!gameObject.activeSelf || Dead || !other.tag.Equals("PlayerBullet"))
@@ -16,9 +17,8 @@ namespace Asteroids
       if (!Dead)
         return;
 
-      GameManager.Instance.Score += Points;
-
-      gameObject.SetActive(false);
+      OnDead();
     }
+
   }
 }

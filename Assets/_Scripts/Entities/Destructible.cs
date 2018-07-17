@@ -13,6 +13,8 @@ namespace Asteroids
     private int _points;
     [SerializeField]
     private Vector2Int _screenSize = new Vector2Int(0, 0);
+    [SerializeField]
+    private GameObject _deathPrefab;
 
     private PolygonCollider2D _collider2D;
     private Rigidbody2D _rigidbody2D;
@@ -53,6 +55,18 @@ namespace Asteroids
     {
       _collider2D = GetComponent<PolygonCollider2D>();
       _rigidbody2D = GetComponent<Rigidbody2D>();
+    }
+
+    protected void OnDead()
+    {
+      GameManager.Instance.Score += Points;
+
+      gameObject.SetActive(false);
+
+      if (_deathPrefab == null)
+        return;
+
+      GameObject death = Instantiate(_deathPrefab, transform.position, transform.rotation, transform.parent);
     }
 
   }
