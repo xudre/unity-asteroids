@@ -19,6 +19,7 @@ namespace Asteroids
       get { return _score; }
       set { _score = value; }
     }
+
     private void Awake()
     {
       if (_instance != null)

@@ -4,6 +4,14 @@ namespace Asteroids
 {
   public class LevelManager : MonoBehaviour
   {
+
+    private static LevelManager _instance;
+
+    public static LevelManager Instance
+    {
+      get { return _instance; }
+    }
+
     private const int MAX_ENEMY_BULLETS = 10;
     private const int MAX_PLAYER_BULLETS = 5;
 
@@ -67,10 +75,29 @@ namespace Asteroids
     private readonly float _thrustDecayTime = .5f;
     private readonly float _shootTimeInterval = .5f;
 
+    public Player Player
+    {
+      get { return _player; }
+    }
+
+    public int Level
+    {
+      get { return _difficulty + 1; }
+    }
+
     #region Unity Lifecycle
 
     private void Awake()
     {
+      if (_instance != null)
+      {
+        Destroy(this);
+
+        return;
+      }
+
+      _instance = this;
+
       SetupLevel();
       SetupPlayer();
     }
