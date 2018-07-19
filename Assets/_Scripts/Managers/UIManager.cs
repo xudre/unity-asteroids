@@ -29,19 +29,13 @@ namespace Asteroids
         return;
       
       if (_lives != null)
-      {
-        _lives.text = String.Format("x {0:N0}", LevelManager.Instance.Player.Life);
-      }
+        _lives.text = String.Format("{0:N0}", LevelManager.Instance.Player.Life);
 
       if (_level != null)
-      {
         _level.text = String.Format("Level {0:N0}", LevelManager.Instance.Level);
-      }
 
       if (_score != null)
-      {
         _score.text = String.Format("{0:N0}", GameManager.Instance.Score);
-      }
 
       _updateCountdown = _updateInterval;
     }
