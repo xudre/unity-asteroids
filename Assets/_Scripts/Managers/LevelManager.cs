@@ -105,6 +105,9 @@ namespace Asteroids
     private void Start()
     {
       _camera = Camera.main;
+
+      AudioManager.Instance.StopMusic();
+      AudioManager.Instance.LevelMusic();
     }
 
     private void FixedUpdate()
@@ -335,6 +338,8 @@ namespace Asteroids
         bullet.gameObject.SetActive(true);
 
         _lastShootTime = Time.fixedTime;
+
+        AudioManager.Instance.Laser();
 
         break;
       }

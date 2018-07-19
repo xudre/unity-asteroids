@@ -63,6 +63,8 @@ namespace Asteroids
 
       gameObject.SetActive(false);
 
+      AudioManager.Instance.Explosion();
+
       if (_deathPrefab == null)
         return;
 
