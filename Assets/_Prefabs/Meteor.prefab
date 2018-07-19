@@ -115,6 +115,9 @@ MonoBehaviour:
   _points: 100
   _screenSize: {x: 101, y: 84}
   _deathPrefab: {fileID: 0}
+  _variations:
+  - {fileID: 21300004, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
+  - {fileID: 21300012, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
 --- !u!212 &212750542152540450
 SpriteRenderer:
   m_ObjectHideFlags: 1
