@@ -27,5 +27,18 @@ namespace Asteroids
       get { return _flames; }
     }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+      if (LevelManager.Instance.PlayerImmortal || !gameObject.activeSelf || Dead || !other.tag.Equals("EnemyBullet"))
+        return;
+
+      Life--;
+
+      OnDead();
+
+      if (Life > 0)
+        LevelManager.Instance.PlayerRespawn();
+    }
+
   }
 }

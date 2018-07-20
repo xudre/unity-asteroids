@@ -59,7 +59,12 @@ namespace Asteroids
 
     protected void OnDead()
     {
-      GameManager.Instance.Score += Points;
+      if (!gameObject.tag.Equals("Player"))
+      {
+        GameManager.Instance.AddScore(_points);
+
+        LevelManager.Instance.Alive--;
+      }
 
       gameObject.SetActive(false);
 
@@ -68,7 +73,7 @@ namespace Asteroids
       if (_deathPrefab == null)
         return;
 
-      GameObject death = Instantiate(_deathPrefab, transform.position, transform.rotation, transform.parent);
+      Instantiate(_deathPrefab, transform.position, transform.rotation, transform.parent);
     }
 
   }

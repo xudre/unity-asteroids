@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using NUnit.Framework;
+using UnityEngine;
+using Random = System.Random;
 
 namespace Asteroids
 {
@@ -6,6 +8,7 @@ namespace Asteroids
   {
 
     private static LevelManager _instance;
+    private static Random _rnd;
 
     public static LevelManager Instance
     {
@@ -65,15 +68,22 @@ namespace Asteroids
     private Transform[] _enemyBullets;
     private Transform[] _playerBullets;
 
+    private int _aliveEntities;
+
     private float _inputSteer;
     private float _inputThrust;
     private bool _inputShoot;
     private bool _inputWarp;
 
     private float _lastThrustTime;
-    private float _lastShootTime;
+    private float _lastPlayerShootTime;
+    private float _lastEnemyShootTime;
+    private float _warpCountdown;
+    private float _immortalCountdown;
     private readonly float _thrustDecayTime = .5f;
     private readonly float _shootTimeInterval = .5f;
+    private readonly float _warpInterval = 5f;
+    private readonly float _immortalInterval = 2f;
 
     public Player Player
     {
@@ -83,6 +93,22 @@ namespace Asteroids
     public int Level
     {
       get { return _difficulty + 1; }
+    }
+
+    public float WarpReady
+    {
+      get { return 1 - _warpCountdown / _warpInterval; }
+    }
+
+    public int Alive
+    {
+      get { return _aliveEntities; }
+      set { _aliveEntities = value; }
+    }
+
+    public bool PlayerImmortal
+    {
+      get { return _immortalCountdown > 0; }
     }
 
     #region Unity Lifecycle
@@ -97,14 +123,15 @@ namespace Asteroids
       }
 
       _instance = this;
-
-      SetupLevel();
-      SetupPlayer();
+      _rnd = new Random();
     }
 
     private void Start()
     {
       _camera = Camera.main;
+
+      SetupLevel();
+      SetupPlayer();
 
       AudioManager.Instance.StopMusic();
       AudioManager.Instance.LevelMusic();
@@ -121,19 +148,17 @@ namespace Asteroids
     private void Update()
     {
       UpdateInputs();
+
+      if (_aliveEntities < 1)
+        SetupLevel(_difficulty + 1);
     }
 
     #endregion
 
-    public void SetupLevel(int difficulty)
+    public void SetupLevel(int difficulty = 0)
     {
       _difficulty = difficulty;
 
-      SetupLevel();
-    }
-
-    private void SetupLevel()
-    {
       if (_enemyBullets == null)
       {
         _enemyBullets = new Transform[MAX_ENEMY_BULLETS];
@@ -164,6 +189,19 @@ namespace Asteroids
 
       SetupAsteroids();
       SetupEnemies();
+
+      _aliveEntities = _enemies.Length + _asteroids.Length;
+
+      _immortalCountdown = _immortalInterval;
+    }
+
+    public void PlayerRespawn()
+    {
+      _player.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+      _immortalCountdown = _immortalInterval;
+
+      _player.gameObject.SetActive(true);
     }
 
     private void SetupEnemies()
@@ -179,7 +217,7 @@ namespace Asteroids
           _enemies[i] = enemyInstance.GetComponent<Enemy>();
         }
 
-        _enemies[i].transform.position = Vector3.zero;
+        _enemies[i].transform.position = _camera.ScreenToWorldPoint(new Vector3(_rnd.Next(0, Screen.width), _rnd.Next(0, Screen.height), 0f));
       }
     }
 
@@ -196,7 +234,8 @@ namespace Asteroids
           _asteroids[i] = asteroidInstance.GetComponent<Meteor>();
         }
 
-        _asteroids[i].transform.position = Vector3.zero;
+        _asteroids[i].transform.position = _camera.ScreenToWorldPoint(new Vector3(_rnd.Next(0, Screen.width), _rnd.Next(0, Screen.height), 0f));
+        _asteroids[i].Rigidbody.AddForce(_asteroids[i].transform.forward * 10f);
       }
     }
 
@@ -210,6 +249,8 @@ namespace Asteroids
 
         _player.Life = _initialLives;
       }
+
+      _immortalCountdown = _immortalInterval;
 
       _player.transform.position = Vector3.zero;
     }
@@ -226,6 +267,8 @@ namespace Asteroids
     {
       if (_player == null || _player.Dead)
         return;
+
+      _immortalCountdown -= Time.fixedDeltaTime;
 
       _player.transform.Rotate(new Vector3(0, 0, -_inputSteer * _player.RotationSpeed * Time.fixedDeltaTime));
 
@@ -256,6 +299,11 @@ namespace Asteroids
       if (_inputShoot)
         AddPlayerBullet();
 
+      _warpCountdown -= Time.fixedDeltaTime;
+
+      if (_inputWarp)
+        PlayerWarp();
+
       EdgeWarp(_player);
     }
 
@@ -267,6 +315,8 @@ namespace Asteroids
 
         if (meteor == null || meteor.Dead)
           continue;
+
+        meteor.transform.Rotate(new Vector3(0, 0, 5f * Time.fixedDeltaTime));
 
         EdgeWarp(meteor);
       }
@@ -281,6 +331,9 @@ namespace Asteroids
         if (enemy == null || enemy.Dead)
           continue;
 
+        enemy.transform.Rotate(new Vector3(0, 0, enemy.RotationSpeed * Time.fixedDeltaTime));
+        enemy.Rigidbody.AddForce(enemy.transform.up * enemy.MoveSpeed * Time.fixedDeltaTime);
+
         AddEnemyBullet(enemy.transform);
 
         EdgeWarp(enemy);
@@ -289,6 +342,7 @@ namespace Asteroids
 
     private void UpdateBullets()
     {
+      // Player bullets:
       for (int i = 0; i < MAX_PLAYER_BULLETS; i++)
       {
         Transform bullet = _playerBullets[i];
@@ -305,6 +359,7 @@ namespace Asteroids
         EdgeDisable(bullet);
       }
 
+      // Enemies bullets:
       for (int i = 0; i < MAX_ENEMY_BULLETS; i++)
       {
         Transform bullet = _enemyBullets[i];
@@ -324,7 +379,7 @@ namespace Asteroids
 
     private void AddPlayerBullet()
     {
-      if (_lastShootTime >= Time.fixedTime - _shootTimeInterval)
+      if (_lastPlayerShootTime >= Time.fixedTime - _shootTimeInterval)
         return;
 
       for (int i = 0; i < MAX_PLAYER_BULLETS; i++)
@@ -337,7 +392,7 @@ namespace Asteroids
         bullet.SetPositionAndRotation(_player.transform.position, _player.transform.rotation);
         bullet.gameObject.SetActive(true);
 
-        _lastShootTime = Time.fixedTime;
+        _lastPlayerShootTime = Time.fixedTime;
 
         AudioManager.Instance.Laser();
 
@@ -347,7 +402,41 @@ namespace Asteroids
 
     private void AddEnemyBullet(Transform entity)
     {
+      float interval = _shootTimeInterval * 2f - _shootTimeInterval / 100f * _difficulty;
 
+      if (_immortalCountdown > 0 || _lastEnemyShootTime >= Time.fixedTime - interval)
+        return;
+
+      for (int e = 0; e < _maxEnemies; e++)
+      {
+        Enemy enemy = _enemies[e];
+
+        if (!enemy.gameObject.activeSelf || enemy.Dead)
+          continue;
+
+        for (int i = 0; i < MAX_ENEMY_BULLETS; i++)
+        {
+          Transform bullet = _enemyBullets[i];
+
+          if (bullet.gameObject.activeSelf)
+            continue;
+
+          Vector3 direction = _player.transform.position - enemy.transform.position;
+
+          direction.z = 0;
+
+          bullet.SetPositionAndRotation(enemy.transform.position, Quaternion.FromToRotation(Vector3.up, direction));
+          bullet.Rotate(new Vector3(0f, 0f, _rnd.Next(10, 35)));
+
+          bullet.gameObject.SetActive(true);
+
+          _lastEnemyShootTime = Time.fixedTime;
+
+          AudioManager.Instance.Laser();
+
+          break;
+        }
+      }
     }
 
     private void EdgeDisable(Transform entity)
@@ -389,5 +478,19 @@ namespace Asteroids
 
       entity.transform.position = newPos;
     }
+
+    private void PlayerWarp()
+    {
+      if (_warpCountdown > 0)
+        return;
+
+      Vector3 newPos = _camera.ScreenToWorldPoint(new Vector3(_rnd.Next(0, Screen.width), _rnd.Next(0, Screen.height), 0));
+
+      _player.transform.position = newPos;
+      _player.transform.Rotate(new Vector3(0, 0, (float) (_rnd.NextDouble() * 360f)));
+
+      _warpCountdown = _warpInterval;
+    }
+
   }
 }

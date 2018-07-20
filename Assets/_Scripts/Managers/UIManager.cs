@@ -13,6 +13,8 @@ namespace Asteroids
     private Text _level;
     [SerializeField]
     private Text _score;
+    [SerializeField]
+    private RectTransform _warpBar;
 
     private float _updateCountdown;
     private float _updateInterval = .5f;
@@ -24,6 +26,9 @@ namespace Asteroids
     private void UpdateUserInterface()
     {
       _updateCountdown -= Time.deltaTime;
+
+      if (_warpBar != null)
+        _warpBar.sizeDelta = new Vector2(100 * LevelManager.Instance.WarpReady, _warpBar.sizeDelta.y);
 
       if (_updateCountdown > 0)
         return;
