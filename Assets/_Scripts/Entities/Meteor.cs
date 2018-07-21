@@ -10,8 +10,15 @@ namespace Asteroids
 
     [SerializeField]
     private Sprite[] _variations;
+    [SerializeField]
+    private Meteor[] _debris;
 
     private SpriteRenderer _renderer;
+
+    public Meteor[] Debris
+    {
+      get { return _debris; }
+    }
 
     private void Start()
     {
@@ -37,6 +44,8 @@ namespace Asteroids
 
       if (!Dead)
         return;
+
+      LevelManager.Instance.AddMeteorDebris(this, other);
 
       OnDead();
     }

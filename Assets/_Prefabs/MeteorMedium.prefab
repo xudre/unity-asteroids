@@ -22,9 +22,9 @@ GameObject:
   - component: {fileID: 114035753238030236}
   - component: {fileID: 212750542152540450}
   - component: {fileID: 50024150133922514}
-  - component: {fileID: 60871156950181438}
+  - component: {fileID: 60542675431600026}
   m_Layer: 0
-  m_Name: Meteor
+  m_Name: MeteorMedium
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,7 +63,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!60 &60871156950181438
+--- !u!60 &60542675431600026
 PolygonCollider2D:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -79,7 +79,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.2, y: 0.98}
+    oldSize: {x: 0.45, y: 0.4}
     newSize: {x: 1.01, y: 0.84}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -87,19 +87,15 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.4397483, y: -0.12258923}
-      - {x: 0.48376513, y: -0.034208655}
-      - {x: 0.5050001, y: 0.015251398}
-      - {x: 0.2337656, y: 0.41806948}
-      - {x: -0.33148718, y: 0.41227806}
-      - {x: -0.3707919, y: 0.30768526}
-      - {x: -0.5030694, y: -0.1005764}
-      - {x: -0.3949628, y: -0.22721875}
-      - {x: -0.21411276, y: -0.416139}
-      - {x: 0.10333443, y: -0.29645026}
-      - {x: 0.15360928, y: -0.3006953}
-      - {x: 0.33959293, y: -0.32946014}
-      - {x: 0.37762594, y: -0.25278127}
+    - - {x: 0.08790517, y: 0.19524932}
+      - {x: -0.06247616, y: 0.17168617}
+      - {x: -0.16323972, y: 0.15187716}
+      - {x: -0.22618747, y: -0.04724288}
+      - {x: -0.07898736, y: -0.18931079}
+      - {x: 0.075424194, y: -0.19881248}
+      - {x: 0.22975063, y: 0.023637295}
+      - {x: 0.18224287, y: 0.08011651}
+      - {x: 0.1307478, y: 0.14655352}
 --- !u!114 &114035753238030236
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -113,14 +109,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _life: 1
   _points: 100
-  _screenSize: {x: 101, y: 84}
+  _screenSize: {x: 45, y: 40}
   _deathPrefab: {fileID: 0}
   _variations:
-  - {fileID: 21300004, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
-  - {fileID: 21300012, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
-  _debris:
-  - {fileID: 114035753238030236, guid: eef5d9f78a1b9564ba715a9147d24ce1, type: 2}
-  - {fileID: 114035753238030236, guid: eef5d9f78a1b9564ba715a9147d24ce1, type: 2}
+  - {fileID: 21300020, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
+  - {fileID: 21300026, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
+  _debris: []
 --- !u!212 &212750542152540450
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -155,7 +149,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300004, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
+  m_Sprite: {fileID: 21300020, guid: 96d8a9dacb4d78d4e865ab25841517e4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

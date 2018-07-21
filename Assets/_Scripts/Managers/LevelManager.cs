@@ -64,6 +64,7 @@ namespace Asteroids
 
     private Enemy[] _enemies;
     private Meteor[] _asteroids;
+    private Meteor[] _debris;
     private Player _player;
     private Transform[] _enemyBullets;
     private Transform[] _playerBullets;
@@ -83,7 +84,7 @@ namespace Asteroids
     private readonly float _thrustDecayTime = .5f;
     private readonly float _shootTimeInterval = .5f;
     private readonly float _warpInterval = 5f;
-    private readonly float _immortalInterval = 2f;
+    private readonly float _immortalInterval = 5f;
 
     public Player Player
     {
@@ -204,6 +205,39 @@ namespace Asteroids
       _player.gameObject.SetActive(true);
     }
 
+    public void AddMeteorDebris(Meteor meteor, Collider2D other)
+    {
+      if (meteor.Debris == null || meteor.Debris.Length < 1)
+        return;
+
+      int count = meteor.Debris.Length;
+      int poolCount = _debris.Length;
+      Vector2 direction = other.transform.up.normalized;
+      Vector3 position = meteor.transform.position;
+
+      _aliveEntities += count;
+
+      for (int i = 0; i < count; i++)
+      {
+        Vector3 newPosition = new Vector3(position.x + (float) _rnd.NextDouble(), position.y + (float) _rnd.NextDouble(), 0f);
+        Vector2 force = direction * ((i + 1) * .5f);
+
+        Meteor debris = Instantiate(meteor.Debris[i], newPosition, meteor.transform.rotation, _asteroidsRoot);
+
+        debris.Rigidbody.AddForceAtPosition(force, meteor.transform.position, ForceMode2D.Impulse);
+
+        for (int j = 0; j < poolCount; j++)
+        {
+          if (_debris[j] != null)
+            continue;
+
+          _debris[j] = debris;
+
+          break;
+        }
+      }
+    }
+
     private void SetupEnemies()
     {
       _enemies = new Enemy[_maxEnemies];
@@ -225,6 +259,8 @@ namespace Asteroids
     {
       _asteroids = new Meteor[_maxAsteroids];
 
+      int debrisCount = 0;
+
       for (int i = 0; i < _maxAsteroids; i++)
       {
         if (_asteroids[i] == null)
@@ -236,7 +272,13 @@ namespace Asteroids
 
         _asteroids[i].transform.position = _camera.ScreenToWorldPoint(new Vector3(_rnd.Next(0, Screen.width), _rnd.Next(0, Screen.height), 0f));
         _asteroids[i].Rigidbody.AddForce(_asteroids[i].transform.forward * 10f);
+
+        if (_asteroids[i].Debris != null)
+          debrisCount += _asteroids[i].Debris.Length;
       }
+
+      if (debrisCount > 0)
+        _debris = new Meteor[debrisCount];
     }
 
     private void SetupPlayer()
@@ -312,6 +354,23 @@ namespace Asteroids
       for (int i = 0; i < _maxAsteroids; i++)
       {
         Meteor meteor = _asteroids[i];
+
+        if (meteor == null || meteor.Dead)
+          continue;
+
+        meteor.transform.Rotate(new Vector3(0, 0, 5f * Time.fixedDeltaTime));
+
+        EdgeWarp(meteor);
+      }
+
+      if (_debris == null)
+        return;
+
+      int debrisCount = _debris.Length;
+
+      for (int i = 0; i < debrisCount; i++)
+      {
+        Meteor meteor = _debris[i];
 
         if (meteor == null || meteor.Dead)
           continue;
@@ -402,9 +461,12 @@ namespace Asteroids
 
     private void AddEnemyBullet(Transform entity)
     {
+      if (_immortalCountdown > 0 || _player.Dead)
+        return;
+
       float interval = _shootTimeInterval * 2f - _shootTimeInterval / 100f * _difficulty;
 
-      if (_immortalCountdown > 0 || _lastEnemyShootTime >= Time.fixedTime - interval)
+      if (_lastEnemyShootTime >= Time.fixedTime - interval)
         return;
 
       for (int e = 0; e < _maxEnemies; e++)
@@ -426,7 +488,7 @@ namespace Asteroids
           direction.z = 0;
 
           bullet.SetPositionAndRotation(enemy.transform.position, Quaternion.FromToRotation(Vector3.up, direction));
-          bullet.Rotate(new Vector3(0f, 0f, _rnd.Next(10, 35)));
+          bullet.Rotate(new Vector3(0f, 0f, _rnd.Next(0, 20)));
 
           bullet.gameObject.SetActive(true);
 
